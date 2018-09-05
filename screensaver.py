@@ -222,8 +222,9 @@ class ScreensaverBase(object):
     def _get_folder_images(self, path):
         self.log('_get_folder_images started with path: %s' % repr(path))
         dirs, files = xbmcvfs.listdir(path)
+        pathtocheck = path.rstrip('/')
         images = [
-            xbmc.validatePath(path + f) for f in files
+            xbmc.validatePath(pathtocheck + '/' + f) for f in files
             if f.lower()[-3:] in ('jpg', 'png')
         ]
         if addon.getSetting('recursive') == 'true':
