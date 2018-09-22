@@ -19,6 +19,7 @@
 
 import random
 import sys
+from PIL import Image
 
 if sys.version_info >= (2, 7):
     import json
@@ -308,8 +309,10 @@ class TableDropScreensaver(ScreensaverBase):
     IMAGE_CONTROL_COUNT = 20
     FAST_IMAGE_COUNT = 0
     NEXT_IMAGE_TIME = 1500
-    MIN_WIDTH = 500
-    MAX_WIDTH = 700
+    MIN_WIDTH_LANDSCAPE = 500
+    MAX_WIDTH_LANDSCAPE = 700
+    MIN_WIDTH_PORTRAIT = 281
+    MAX_WIDTH_PORTRAIT = 393
 
     def load_settings(self):
         self.NEXT_IMAGE_TIME = int(addon.getSetting('tabledrop_wait'))
@@ -334,10 +337,19 @@ class TableDropScreensaver(ScreensaverBase):
         self.xbmc_window.removeControl(image_control)
         self.xbmc_window.addControl(image_control)
         # calculate all parameters and properties
-        width = random.randint(self.MIN_WIDTH, self.MAX_WIDTH)
-        height = int(width / self.image_aspect_ratio)
-        x_position = random.randint(0, 1280 - width)
-        y_position = random.randint(0, 720 - height)
+        im = Image.open(image_url)
+        if im.size[0] > im.size[1]:
+            # landscape
+            width = random.randint(self.MIN_WIDTH_LANDSCAPE, self.MAX_WIDTH_LANDSCAPE)
+        else:
+            # portrait
+            width = random.randint(self.MIN_WIDTH_PORTRAIT, self.MAX_WIDTH_PORTRAIT)
+        
+        height = int((im.size[1] * width) / im.size[0])
+        self.log('orig: %s' % im.size[0] + ' x %s' % im.size[1] + '| new: %s' % width + ' x %s' % height)
+        x_position = random.randint(0, abs(1280 - width))
+        y_position = random.randint(0, abs(720 - height))
+        del im
         drop_height = random.randint(400, 800)
         drop_duration = drop_height * 1.5
         rotation_degrees = random.uniform(-20, 20)
